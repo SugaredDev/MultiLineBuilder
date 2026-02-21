@@ -9,7 +9,7 @@ public class MultiLineBuilder : EditorWindow
 {
 
     [System.Serializable]
-    public class BuildVersion { public global::BuildVersion configAsset; public bool buildEnabled; }
+    public class BuildConfig { public BuildVersion configAsset; public bool buildEnabled; }
 
     class PlatformInfo
     {
@@ -29,9 +29,9 @@ public class MultiLineBuilder : EditorWindow
     const string VersionsPath = "Assets/MultiLineBuilder/Resources";
     const string ActiveVersionPath = "Assets/MultiLineBuilder/Resources/ActiveVersion.asset";
 
-    List<BuildVersion> buildVersions = new();
+    List<BuildConfig> buildVersions = new();
     Vector2 scroll;
-    global::BuildVersion inEditorVersion;
+    BuildVersion inEditorVersion;
     bool buildWindows, buildMac, buildLinux, buildSteamDeck;
 
     readonly PlatformInfo[] platforms = {
@@ -47,7 +47,7 @@ public class MultiLineBuilder : EditorWindow
     void OnEnable()
     {
         RefreshVersionsList();
-        inEditorVersion = AssetDatabase.LoadAssetAtPath<global::BuildVersion>(ActiveVersionPath) ?? CreateDefaultVersion();
+        inEditorVersion = AssetDatabase.LoadAssetAtPath<BuildVersion>(ActiveVersionPath) ?? CreateDefaultVersion();
     }
 
     void OnGUI()
@@ -163,7 +163,7 @@ public class MultiLineBuilder : EditorWindow
         EditorUtility.DisplayDialog("Complete", "All builds finished!", "OK");
     }
 
-    void BuildPlatform(BuildVersion version, PlatformInfo platform, string root, string[] scenes)
+    void BuildPlatform(BuildConfig version, PlatformInfo platform, string root, string[] scenes)
     {
         string folder = Path.Combine(root, version.configAsset.title, platform.folder);
         Directory.CreateDirectory(folder);
@@ -190,16 +190,16 @@ public class MultiLineBuilder : EditorWindow
         buildVersions = AssetDatabase.FindAssets("t:BuildVersion", new[] { VersionsPath })
             .Select(AssetDatabase.GUIDToAssetPath)
             .Where(path => path != ActiveVersionPath)
-            .Select(path => AssetDatabase.LoadAssetAtPath<global::BuildVersion>(path))
+            .Select(path => AssetDatabase.LoadAssetAtPath<BuildVersion>(path))
             .Where(asset => asset != null)
-            .Select(asset => new BuildVersion { configAsset = asset })
+            .Select(asset => new BuildConfig { configAsset = asset })
             .ToList();
     }
 
-    global::BuildVersion CreateDefaultVersion()
+    BuildVersion CreateDefaultVersion()
     {
         if (!Directory.Exists(VersionsPath)) Directory.CreateDirectory(VersionsPath);
-        var version = CreateInstance<global::BuildVersion>();
+        var version = CreateInstance<BuildVersion>();
         version.name = "ActiveVersion";
         AssetDatabase.CreateAsset(version, ActiveVersionPath);
         AssetDatabase.SaveAssets();

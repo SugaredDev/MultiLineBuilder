@@ -1,0 +1,18 @@
+{
+    "name": "Sugared.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1a35e7631787f19f2a32bb7d8986f58d"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
