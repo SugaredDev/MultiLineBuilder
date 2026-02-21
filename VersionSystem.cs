@@ -4,6 +4,12 @@ public class VersionSystem : MonoBehaviour
 {
 
     public static BuildVersion version { get; private set; }
+    static bool showGUI = true;
+
+    public static void ShowVersion()
+    {
+        showGUI = !showGUI;
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Initialize()
@@ -20,15 +26,12 @@ public class VersionSystem : MonoBehaviour
 
         if (version == null)
             Debug.LogError("ActiveVersion.asset not found in Resources folder. (Assets/MultiLineBuilder/Resources)");
-        else
-            Debug.Log($"Loaded {version.type} build version: {version.title} (Steam ID:{version.steamAPI}).");
     }
 
     GUIStyle versionStyle;
     Font customFont;
     void Awake()
     {
-        
         customFont = Resources.Load<Font>("GUI");
         if (customFont == null)
             Debug.LogError("GUI Font not found! (Resources/GUI)");
@@ -43,6 +46,9 @@ public class VersionSystem : MonoBehaviour
 
     void OnGUI()
     {
+        if (!showGUI || version == null || version.type != BuildVersion.ProjectType.Playtest)
+            return;
+
         versionStyle.fontSize = Mathf.Max(5, Screen.height / 50);
 
         string versionText = $"{version.title}.{Application.version}";

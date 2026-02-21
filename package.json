@@ -1,0 +1,10 @@
+{
+  "name": "multilinebuilder",
+  "version": "1.1.1",
+  "displayName": "MultiLineBuilder",
+  "description": "Unity Toolkit for several builds at once across platforms and project types (Demo, Playtest).",
+  "unity": "6000.0",
+  "author": {
+    "name": "Dawid \"Sugared\" Szarek"
+  }
+}
