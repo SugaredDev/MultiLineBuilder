@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Sugared
+namespace MultiClaw
 {
 
 [InitializeOnLoad]

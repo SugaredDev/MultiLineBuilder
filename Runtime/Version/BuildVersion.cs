@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Sugared
+namespace MultiClaw
 {
 
 [CreateAssetMenu(fileName = "Build Version #", menuName = "Builds/Build Version")]

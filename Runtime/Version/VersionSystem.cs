@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Sugared
+namespace MultiClaw
 {
 
 public class VersionSystem : MonoBehaviour
