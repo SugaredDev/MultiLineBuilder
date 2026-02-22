@@ -14,18 +14,18 @@ namespace Sugared
 {
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class ConsoleCommandAttribute : Attribute
+public class CommandAttribute : Attribute
 {
 
     public string Name { get; set; }
     
-    public ConsoleCommandAttribute() { }
+    public CommandAttribute() { }
     
-    public ConsoleCommandAttribute(string name) => Name = name;
+    public CommandAttribute(string name) => Name = name;
         
 }
 
-public class Console : MonoBehaviour
+public class CommandConsole : MonoBehaviour
 {
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -37,7 +37,7 @@ public class Console : MonoBehaviour
             cloud = new GameObject("Cloud");
             DontDestroyOnLoad(cloud);
         }   
-        cloud.AddComponent<Console>();
+        cloud.AddComponent<CommandConsole>();
     }
 
     public void Awake()
@@ -107,7 +107,7 @@ public class Console : MonoBehaviour
 
     // ─────────────────────────────────────────────────────────────
 
-    [HideInInspector] public static Console console;
+    [HideInInspector] public static CommandConsole console;
     void SetConsole()
     {
         if (console == null)
@@ -141,7 +141,7 @@ public class Console : MonoBehaviour
                     
                     foreach (MethodInfo method in methods)
                     {
-                        ConsoleCommandAttribute commandAttr = method.GetCustomAttribute<ConsoleCommandAttribute>();
+                        CommandAttribute commandAttr = method.GetCustomAttribute<CommandAttribute>();
                         if (commandAttr == null)
                             continue;
                         
