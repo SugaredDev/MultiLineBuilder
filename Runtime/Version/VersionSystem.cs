@@ -18,14 +18,14 @@ public class VersionSystem : MonoBehaviour
         if (cloud == null)
         {
             cloud = new GameObject("Cloud");
-            GameObject.DontDestroyOnLoad(cloud);
+            DontDestroyOnLoad(cloud);
         }
         cloud.AddComponent<VersionSystem>();
 
         version = Resources.Load<BuildVersion>("ActiveVersion");
 
         if (version == null)
-            Debug.LogError("ActiveVersion.asset not found in Resources folder. (Assets/Plugins/MultiLineBuilder/Resources)");
+            Debug.LogError("Game Version => ActiveVersion.asset not found in Resources folder. (Assets/Plugins/MultiLineBuilder/Resources)");
     }
 
     GUIStyle versionStyle;
@@ -34,14 +34,16 @@ public class VersionSystem : MonoBehaviour
     {
         customFont = Resources.Load<Font>("GUI");
         if (customFont == null)
-            Debug.LogError("GUI Font not found! (Resources/GUI)");
+            Debug.LogWarning("Version Indication => GUI Font not found in Assets/Plugins/MultiLineBuilder/Resources/GUI. Using default GUI font.");
 
         versionStyle = new GUIStyle
         {
             normal = { textColor = new Color(1f, 1f, 1f, 0.1f) },
             alignment = TextAnchor.MiddleCenter,
-            font = customFont
         };
+        
+        if (customFont != null)
+            versionStyle.font = customFont;
     }
 
     void OnGUI()
