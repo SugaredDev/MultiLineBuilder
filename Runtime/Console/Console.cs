@@ -22,7 +22,7 @@ public class ConsoleCommandAttribute : Attribute
     
 }
 
-class Console : MonoBehaviour
+public class Console : MonoBehaviour
 {
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
