@@ -32,7 +32,7 @@ public class Console : MonoBehaviour
         if (cloud == null)
         { 
             cloud = new GameObject("Cloud");
-            GameObject.DontDestroyOnLoad(cloud);
+            DontDestroyOnLoad(cloud);
         }   
         cloud.AddComponent<Console>();
     }
@@ -60,6 +60,9 @@ public class Console : MonoBehaviour
 
     void Update()
     {
+        if (VersionSystem.version == null || VersionSystem.version.type != BuildVersion.ProjectType.Playtest)
+            return;
+
         if (Keyboard.current != null && Keyboard.current.backquoteKey.wasPressedThisFrame)
             ToggleConsole();
     }
