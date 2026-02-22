@@ -1,5 +1,8 @@
 using UnityEngine;
 
+namespace Sugared
+{
+
 public class VersionSystem : MonoBehaviour
 {
 
@@ -65,5 +68,5 @@ public class VersionSystem : MonoBehaviour
     }
 
 }
-    
- 
+
+}

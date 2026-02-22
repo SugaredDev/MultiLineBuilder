@@ -10,6 +10,9 @@ using System.Linq;
 // To mark a function as a command, add '[Command]' attribute to it, make it's input 'string[]' and make it static.
 // You can also specify command name like '[Command("otherthatfunctionname")]'.
 
+namespace Sugared
+{
+
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class ConsoleCommandAttribute : Attribute
 {
@@ -19,7 +22,7 @@ public class ConsoleCommandAttribute : Attribute
     public ConsoleCommandAttribute() { }
     
     public ConsoleCommandAttribute(string name) => Name = name;
-    
+        
 }
 
 public class Console : MonoBehaviour
@@ -460,5 +463,7 @@ public class Console : MonoBehaviour
             GUI.FocusControl("InputField");
         }
     }
+
+}
 
 }

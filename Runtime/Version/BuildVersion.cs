@@ -1,5 +1,8 @@
 using UnityEngine;
 
+namespace Sugared
+{
+
 [CreateAssetMenu(fileName = "Build Version #", menuName = "Builds/Build Version")]
 public class BuildVersion : ScriptableObject
 {
@@ -11,5 +14,7 @@ public class BuildVersion : ScriptableObject
     public uint steamAPI;
     [HideInInspector] public bool steamDeck = false;
     [HideInInspector] public bool buildEnabled = true;
+
+}
 
 }

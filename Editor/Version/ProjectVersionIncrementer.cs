@@ -1,6 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
+namespace Sugared
+{
+
 [InitializeOnLoad]
 public class ProjectVersionIncrementer
 {
@@ -41,4 +44,7 @@ public class ProjectVersionIncrementer
 
         Debug.Log($"Project Version updated to {newVersion}");
     }
+
+}
+
 }
