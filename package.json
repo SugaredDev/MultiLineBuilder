@@ -3,7 +3,6 @@
   "version": "1.3.0",
   "displayName": "MultiClaw",
   "description": "Unity Toolkit for Build Version forking and QA Debug instrumentation.",
-  "unity": "6000.0",
   "author": {
     "name": "Dawid \"Sugared\" Szarek"
   }
