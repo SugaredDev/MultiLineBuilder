@@ -24,8 +24,8 @@ public class ProjectVersionIncrementer
 
         if (parts.Length != 4)
         {
-            Debug.LogWarning("Build version is not in the format 'major.minor.build.revision'. Resetting to '0.0.0.0'.");
-            parts = new string[] { "0", "0", "0", "0" };
+            Debug.LogWarning("Build version is not in the correct format. => Resetting to '0.0.0.000'.");
+            parts = new string[] { "0", "0", "0", "000" };
         }
 
         if (!int.TryParse(parts[3], out int revision))
@@ -35,7 +35,7 @@ public class ProjectVersionIncrementer
 
         revision++;
 
-        string newVersion = $"{parts[0]}.{parts[1]}.{parts[2]}.{revision}";
+        string newVersion = $"{parts[0]}.{parts[1]}.{parts[2]}.{revision:D3}";
 
         PlayerSettings.bundleVersion = newVersion;
 
