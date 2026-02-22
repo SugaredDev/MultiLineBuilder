@@ -25,7 +25,7 @@ public class VersionSystem : MonoBehaviour
         version = Resources.Load<BuildVersion>("ActiveVersion");
 
         if (version == null)
-            Debug.LogError("ActiveVersion.asset not found in Resources folder. (Assets/MultiLineBuilder/Resources)");
+            Debug.LogError("ActiveVersion.asset not found in Resources folder. (Assets/Plugins/MultiLineBuilder/Resources)");
     }
 
     GUIStyle versionStyle;

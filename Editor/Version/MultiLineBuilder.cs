@@ -26,8 +26,8 @@ public class MultiLineBuilder : EditorWindow
         }
     }
 
-    const string VersionsPath = "Assets/MultiLineBuilder/Resources";
-    const string ActiveVersionPath = "Assets/MultiLineBuilder/Resources/ActiveVersion.asset";
+    const string VersionsPath = "Assets/Plugins/MultiLineBuilder/Resources";
+    const string ActiveVersionPath = "Assets/Plugins/MultiLineBuilder/Resources/ActiveVersion.asset";
 
     List<BuildConfig> buildVersions = new();
     Vector2 scroll;
