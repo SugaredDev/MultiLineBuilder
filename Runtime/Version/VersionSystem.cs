@@ -28,7 +28,7 @@ public class VersionSystem : MonoBehaviour
         version = Resources.Load<BuildVersion>("ActiveVersion");
 
         if (version == null)
-            Debug.LogError("Game Version => ActiveVersion.asset not found in Resources folder. (Assets/Plugins/MultiLineBuilder/Resources)");
+            Debug.LogError("Game Version => ActiveVersion.asset not found in Resources folder. (Assets/Plugins/MultiClaw/Resources)");
     }
 
     GUIStyle versionStyle;
@@ -37,7 +37,7 @@ public class VersionSystem : MonoBehaviour
     {
         customFont = Resources.Load<Font>("GUI");
         if (customFont == null)
-            Debug.LogWarning("Version Indication => GUI Font not found in Assets/Plugins/MultiLineBuilder/Resources/GUI. Using default GUI font.");
+            Debug.LogWarning("Version Indication => GUI Font not found in Assets/Plugins/MultiClaw/Resources/GUI. Using default GUI font.");
 
         versionStyle = new GUIStyle
         {

@@ -8,7 +8,7 @@ using System.Linq;
 namespace Sugared
 {
 
-public class MultiLineBuilder : EditorWindow
+public class MultiClawBuilder : EditorWindow
 {
 
     [System.Serializable]
@@ -29,8 +29,8 @@ public class MultiLineBuilder : EditorWindow
         }
     }
 
-    const string VersionsPath = "Assets/Plugins/MultiLineBuilder/Resources";
-    const string ActiveVersionPath = "Assets/Plugins/MultiLineBuilder/Resources/ActiveVersion.asset";
+    const string VersionsPath = "Assets/Plugins/MultiClaw/Resources";
+    const string ActiveVersionPath = "Assets/Plugins/MultiClaw/Resources/ActiveVersion.asset";
 
     List<BuildConfig> buildVersions = new();
     Vector2 scroll;
@@ -44,8 +44,8 @@ public class MultiLineBuilder : EditorWindow
         new(true, BuildTarget.StandaloneLinux64, "Steam Deck", ".x86_64")
     };
 
-    [MenuItem("Tools/MultiLine Builder")]
-    static void ShowWindow() => GetWindow<MultiLineBuilder>("MultiLine Builder");
+    [MenuItem("Tools/MultiClaw/Builder")]
+    static void ShowWindow() => GetWindow<MultiClawBuilder>("MultiClaw | Builder");
 
     void OnEnable()
     {
