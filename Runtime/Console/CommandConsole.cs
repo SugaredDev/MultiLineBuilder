@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Linq;
 
-// To mark a function as a command, add '[Command]' attribute to it, make it's input 'string[]' and make it static.
+// To mark a function as a command, add '[Command]' attribute to it, make it's input 'string[]'.
 // You can also specify command name like '[Command("otherthatfunctionname")]'.
 
 namespace MultiClaw
@@ -31,24 +31,27 @@ public class CommandConsole : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Initialize()
     {
-        var cloud = GameObject.Find("Cloud");
+        var cloud = GameObject.Find("MultiClaw");
         if (cloud == null)
         { 
-            cloud = new GameObject("Cloud");
+            cloud = new GameObject("MultiClaw");
             DontDestroyOnLoad(cloud);
-        }   
-        cloud.AddComponent<CommandConsole>();
+        }
+        
+        var consoleObject = new GameObject("CommandConsole");
+        consoleObject.transform.SetParent(cloud.transform);
+        consoleObject.AddComponent<CommandConsole>();
     }
 
-    public void Awake()
+    void Awake()
     {
         SetConsole();
-        SetCommands();
     }
 
-    void OnValidate()
+    void Start()
     {
-        SetCommands();
+        if (VersionSystem.version == null || VersionSystem.version.type != BuildVersion.ProjectType.Playtest)
+            Destroy(gameObject);
     }
 
     void OnEnable()
@@ -73,6 +76,9 @@ public class CommandConsole : MonoBehaviour
     void ToggleConsole()
     {
         showConsole = !showConsole;
+        
+        if (showConsole && commands.Count == 0)
+            SetCommands();
 
         Time.timeScale = showConsole ? 0f : 1f;
         
@@ -113,7 +119,6 @@ public class CommandConsole : MonoBehaviour
         if (console == null)
         {
             console = this;
-            DontDestroyOnLoad(console);
         }
         else
             Destroy(gameObject);
@@ -122,15 +127,69 @@ public class CommandConsole : MonoBehaviour
     Dictionary<string, Action<string[]>> commands = new Dictionary<string, Action<string[]>>();
     Dictionary<string, object> commandInstances = new Dictionary<string, object>();
     
+    static bool commandsScanned = false;
+    static Dictionary<string, MethodInfo> cachedCommands = new Dictionary<string, MethodInfo>();
+    
     void SetCommands()
     {
         commands.Clear();
         commandInstances.Clear();
         
+        if (!commandsScanned)
+        {
+            commandsScanned = true;
+            ScanAssemblies();
+        }
+        
+        foreach (var kvp in cachedCommands)
+        {
+            string commandName = kvp.Key;
+            MethodInfo method = kvp.Value;
+            
+            if (method.IsStatic)
+            {
+                Action<string[]> action = (Action<string[]>)Delegate.CreateDelegate(typeof(Action<string[]>), method);
+                RegisterCommand(commandName, action);
+            }
+            else
+            {
+                Type type = method.DeclaringType;
+                object instance = null;
+                
+                if (!commandInstances.TryGetValue(type.FullName, out instance))
+                {
+                    try
+                    {
+                        instance = Activator.CreateInstance(type);
+                        commandInstances[type.FullName] = instance;
+                    }
+                    catch
+                    {
+                        Debug.LogWarning($"Could not create instance of {type.Name} for command {commandName}.");
+                        continue;
+                    }
+                }
+                
+                Action<string[]> action = (Action<string[]>)Delegate.CreateDelegate(typeof(Action<string[]>), instance, method);
+                RegisterCommand(commandName, action);
+            }
+        }
+    }
+    
+    void ScanAssemblies()
+    {
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
         
         foreach (Assembly assembly in assemblies)
         {
+            string assemblyName = assembly.GetName().Name;
+            if (assemblyName.StartsWith("Unity") || 
+                assemblyName.StartsWith("System") || 
+                assemblyName.StartsWith("mscorlib") ||
+                assemblyName.StartsWith("netstandard") ||
+                assemblyName.StartsWith("Mono."))
+                continue;
+            
             try
             {
                 Type[] types = assembly.GetTypes();
@@ -154,32 +213,8 @@ public class CommandConsole : MonoBehaviour
                         
                         string commandName = string.IsNullOrEmpty(commandAttr.Name) ? method.Name.ToLower() : commandAttr.Name.ToLower();
                         
-                        if (method.IsStatic)
-                        {
-                            Action<string[]> action = (Action<string[]>)Delegate.CreateDelegate(typeof(Action<string[]>), method);
-                            RegisterCommand(commandName, action);
-                        }
-                        else
-                        {
-                            object instance = null;
-                            
-                            if (!commandInstances.TryGetValue(type.FullName, out instance))
-                            {
-                                try
-                                {
-                                    instance = Activator.CreateInstance(type);
-                                    commandInstances[type.FullName] = instance;
-                                }
-                                catch
-                                {
-                                    Debug.LogWarning($"Could not create instance of {type.Name} for command {commandName}");
-                                    continue;
-                                }
-                            }
-                            
-                            Action<string[]> action = (Action<string[]>)Delegate.CreateDelegate(typeof(Action<string[]>), instance, method);
-                            RegisterCommand(commandName, action);
-                        }
+                        if (!cachedCommands.ContainsKey(commandName))
+                            cachedCommands.Add(commandName, method);
                     }
                 }
             }

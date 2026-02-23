@@ -17,13 +17,16 @@ public class VersionSystem : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Initialize()
     {
-        var cloud = GameObject.Find("Cloud");
+        var cloud = GameObject.Find("MultiClaw");
         if (cloud == null)
         {
-            cloud = new GameObject("Cloud");
+            cloud = new GameObject("MultiClaw");
             DontDestroyOnLoad(cloud);
         }
-        cloud.AddComponent<VersionSystem>();
+        
+        var versionObject = new GameObject("VersionSystem");
+        versionObject.transform.SetParent(cloud.transform);
+        versionObject.AddComponent<VersionSystem>();
 
         version = Resources.Load<BuildVersion>("ActiveVersion");
 
