@@ -8,10 +8,6 @@ namespace MultiClaw
 [InitializeOnLoad]
 public class VersionIncrementer
 {
-    
-    const string VersionsPath = "Assets/Plugins/MultiClaw/Resources";
-    const string ActiveVersionPath = "Assets/Plugins/MultiClaw/Resources/ActiveVersion.asset";
-    
     static VersionIncrementer()
     {
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
@@ -21,31 +17,8 @@ public class VersionIncrementer
     {
         if (state == PlayModeStateChange.ExitingEditMode)
         {
-            EnsureActiveVersionExists();
+            Constants.EnsureActiveVersionExists();
             IncrementRevision();
-        }
-    }
-
-    static void EnsureActiveVersionExists()
-    {
-        var activeVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath);
-        
-        if (activeVersion == null)
-        {
-            Debug.LogWarning("ActiveVersion.asset not found in Resources folder. Creating a new one.");
-            
-            if (!Directory.Exists(VersionsPath))
-                Directory.CreateDirectory(VersionsPath);
-            
-            var newVersion = ScriptableObject.CreateInstance<GameVersion>();
-            newVersion.name = "Active Version";
-            newVersion.title = "Dev";
-            newVersion.fileName = "Development";
-            
-            AssetDatabase.CreateAsset(newVersion, ActiveVersionPath);
-            AssetDatabase.SaveAssets();
-            
-            Debug.Log("ActiveVersion.asset created successfully.");
         }
     }
 

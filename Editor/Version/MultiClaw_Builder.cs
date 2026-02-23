@@ -29,9 +29,6 @@ public class Builder : EditorWindow
         }
     }
 
-    const string VersionsPath = "Assets/Plugins/MultiClaw/Resources";
-    const string ActiveVersionPath = "Assets/Plugins/MultiClaw/Resources/ActiveVersion.asset";
-
     List<BuildConfig> buildVersions = new();
     Vector2 scroll;
     GameVersion inEditorVersion;
@@ -49,20 +46,13 @@ public class Builder : EditorWindow
 
     void OnEnable()
     {
-        EnsureActiveVersionExists();
+        inEditorVersion = Constants.EnsureActiveVersionExists();
         RefreshVersionsList();
-        inEditorVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath) ?? CreateDefaultVersion();
         EnsureActiveVersionMatchesAvailable();
     }
 
     void OnGUI()
     {
-        EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("Versions Folder"))
-            EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<Object>(VersionsPath));
-        if (GUILayout.Button("Refresh")) RefreshVersionsList();
-        EditorGUILayout.EndHorizontal();
-
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Build Versions", EditorStyles.boldLabel);
         GUI.backgroundColor = Color.green;
@@ -111,7 +101,7 @@ public class Builder : EditorWindow
         EditorGUILayout.BeginHorizontal();
 
         bool isActive = inEditorVersion != null && JsonUtility.ToJson(version.configAsset) == JsonUtility.ToJson(inEditorVersion);
-        bool isActiveAsset = AssetDatabase.GetAssetPath(version.configAsset) == ActiveVersionPath;
+        bool isActiveAsset = AssetDatabase.GetAssetPath(version.configAsset) == Constants.ActiveVersionPath;
         
         GUI.backgroundColor = isActive ? Color.yellow : Color.white;
         GUI.enabled = !isActiveAsset && version.configAsset != null;
@@ -213,7 +203,7 @@ public class Builder : EditorWindow
 
         JsonUtility.FromJsonOverwrite(originalJson, inEditorVersion);
         EditorUtility.SetDirty(inEditorVersion);
-        inEditorVersion.name = "ActiveVersion";
+        inEditorVersion.name = "Active Version";
         AssetDatabase.SaveAssets();
         EditorUtility.RevealInFinder(buildsRoot);
         EditorUtility.DisplayDialog("Complete", "All builds finished!", "OK");
@@ -241,16 +231,16 @@ public class Builder : EditorWindow
         buildVersions.Clear();
         buildWindows = buildMac = buildLinux = buildSteamDeck = false;
         
-        if (!Directory.Exists(VersionsPath)) Directory.CreateDirectory(VersionsPath);
+        if (!Directory.Exists(Constants.VersionsPath)) Directory.CreateDirectory(Constants.VersionsPath);
 
-        var allVersions = AssetDatabase.FindAssets("t:GameVersion", new[] { VersionsPath })
+        var allVersions = AssetDatabase.FindAssets("t:GameVersion", new[] { Constants.VersionsPath })
             .Select(AssetDatabase.GUIDToAssetPath)
             .Select(path => AssetDatabase.LoadAssetAtPath<GameVersion>(path))
             .Where(asset => asset != null)
             .Select(asset => new BuildConfig { configAsset = asset })
             .ToList();
         
-        var otherVersions = allVersions.Where(v => AssetDatabase.GetAssetPath(v.configAsset) != ActiveVersionPath).ToList();
+        var otherVersions = allVersions.Where(v => AssetDatabase.GetAssetPath(v.configAsset) != Constants.ActiveVersionPath).ToList();
         
         if (otherVersions.Count > 0)
             buildVersions = otherVersions;
@@ -258,18 +248,6 @@ public class Builder : EditorWindow
             buildVersions = allVersions;
         
         EnsureActiveVersionMatchesAvailable();
-    }
-
-    GameVersion CreateDefaultVersion()
-    {
-        if (!Directory.Exists(VersionsPath)) Directory.CreateDirectory(VersionsPath);
-        var version = CreateInstance<GameVersion>();
-        version.name = "ActiveVersion";
-        version.title = "Debug";
-        version.fileName = "Debug";
-        AssetDatabase.CreateAsset(version, ActiveVersionPath);
-        AssetDatabase.SaveAssets();
-        return version;
     }
 
     void ShowActiveVersion()
@@ -312,14 +290,14 @@ public class Builder : EditorWindow
 
     void CreateNewVersion()
     {
-        if (!Directory.Exists(VersionsPath)) Directory.CreateDirectory(VersionsPath);
+        if (!Directory.Exists(Constants.VersionsPath)) Directory.CreateDirectory(Constants.VersionsPath);
         
         int versionNumber = 1;
         string assetPath;
         
         do
         {
-            assetPath = Path.Combine(VersionsPath, $"Build Version {versionNumber}.asset");
+            assetPath = Path.Combine(Constants.VersionsPath, $"Build Version {versionNumber}.asset");
             versionNumber++;
         } while (AssetDatabase.LoadAssetAtPath<GameVersion>(assetPath) != null);
         
@@ -346,31 +324,10 @@ public class Builder : EditorWindow
         RefreshVersionsList();
     }
 
-    void EnsureActiveVersionExists()
-    {
-        var activeVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath);
-        
-        if (activeVersion == null)
-        {
-            Debug.LogWarning("ActiveVersion.asset not found in Resources folder. => Creating a new one.");
-            
-            if (!Directory.Exists(VersionsPath))
-                Directory.CreateDirectory(VersionsPath);
-            
-            var newVersion = CreateInstance<GameVersion>();
-            newVersion.name = "Active Version";
-            newVersion.title = "Dev";
-            newVersion.fileName = "Development";
-            
-            AssetDatabase.CreateAsset(newVersion, ActiveVersionPath);
-            AssetDatabase.SaveAssets();
-        }
-    }
-
     void EnsureActiveVersionMatchesAvailable()
     {
         if (inEditorVersion == null)
-            inEditorVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath) ?? CreateDefaultVersion();
+            inEditorVersion = Constants.EnsureActiveVersionExists();
         
         if (buildVersions.Count == 0) return;
         
