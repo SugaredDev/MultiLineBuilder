@@ -28,7 +28,7 @@ public class VersionIndicator : MonoBehaviour
         version = Resources.Load<GameVersion>(Constants.Resources_Active);
 
         if (version == null)
-            Debug.LogError("Game Version => ActiveVersion.asset not found in Resources folder. (Assets/Plugins/MultiClaw/Resources)");
+            Debug.LogError("Game Version => Active Version.asset not found in Resources folder. (Assets/Plugins/MultiClaw/Resources)");
     }
 
     GUIStyle versionStyle;

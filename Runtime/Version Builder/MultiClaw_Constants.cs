@@ -23,7 +23,7 @@ public static class Constants
         
         if (activeVersion == null)
         {
-            Debug.LogWarning("ActiveVersion.asset not found in Resources folder. Creating a new one.");
+            Debug.LogWarning("Active Version.asset not found in Resources folder. Creating a new one.");
             
             if (!Directory.Exists(Path_Versions))
                 Directory.CreateDirectory(Path_Versions);
@@ -36,7 +36,7 @@ public static class Constants
             AssetDatabase.CreateAsset(activeVersion, Path_Active);
             AssetDatabase.SaveAssets();
             
-            Debug.Log("ActiveVersion.asset created successfully.");
+            Debug.Log("Active Version.asset created successfully.");
         }
         
         return activeVersion;

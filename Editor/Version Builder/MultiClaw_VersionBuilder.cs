@@ -110,7 +110,7 @@ public class VersionBuilder : EditorWindow
         {
             EditorUtility.CopySerialized(version.configAsset, inEditorVersion);
             EditorUtility.SetDirty(inEditorVersion);
-            inEditorVersion.name = "ActiveVersion";
+            inEditorVersion.name = "Active Version";
         }
 
         GUI.enabled = true;
@@ -250,44 +250,6 @@ public class VersionBuilder : EditorWindow
         EnsureActiveVersionMatchesAvailable();
     }
 
-    void ShowActiveVersion()
-    {
-        EditorGUILayout.LabelField("Active Version", EditorStyles.boldLabel);
-        EditorGUILayout.BeginVertical("box");
-        
-        GUI.enabled = false;
-        
-        if (inEditorVersion != null)
-        {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Title:", GUILayout.Width(140));
-            EditorGUILayout.TextField(inEditorVersion.title);
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Executable File Name:", GUILayout.Width(140));
-            EditorGUILayout.TextField(inEditorVersion.fileName);
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Debug:", GUILayout.Width(140));
-            EditorGUILayout.Toggle(inEditorVersion.debug);
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Steam API:", GUILayout.Width(140));
-            EditorGUILayout.IntField((int)inEditorVersion.steamAPI);
-            EditorGUILayout.EndHorizontal();
-        }
-        else
-        {
-            EditorGUILayout.HelpBox("No active version found.", MessageType.Warning);
-        }
-        
-        GUI.enabled = true;
-        EditorGUILayout.EndVertical();
-    }
-
     void CreateNewVersion()
     {
         if (!Directory.Exists(Constants.Path_Versions)) Directory.CreateDirectory(Constants.Path_Versions);
@@ -345,7 +307,7 @@ public class VersionBuilder : EditorWindow
         {
             EditorUtility.CopySerialized(buildVersions[0].configAsset, inEditorVersion);
             EditorUtility.SetDirty(inEditorVersion);
-            inEditorVersion.name = "ActiveVersion";
+            inEditorVersion.name = "Active Version";
             AssetDatabase.SaveAssets();
         }
     }
