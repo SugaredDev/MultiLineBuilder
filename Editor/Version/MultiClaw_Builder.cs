@@ -8,11 +8,11 @@ using System.Linq;
 namespace MultiClaw
 {
 
-public class MultiClawBuilder : EditorWindow
+public class Builder : EditorWindow
 {
 
     [System.Serializable]
-    public class BuildConfig { public BuildVersion configAsset; public bool buildEnabled; }
+    public class BuildConfig { public GameVersion configAsset; public bool buildEnabled; }
 
     class PlatformInfo
     {
@@ -34,7 +34,7 @@ public class MultiClawBuilder : EditorWindow
 
     List<BuildConfig> buildVersions = new();
     Vector2 scroll;
-    BuildVersion inEditorVersion;
+    GameVersion inEditorVersion;
     bool buildWindows, buildMac, buildLinux, buildSteamDeck;
 
     readonly PlatformInfo[] platforms = {
@@ -45,12 +45,12 @@ public class MultiClawBuilder : EditorWindow
     };
 
     [MenuItem("Tools/MultiClaw/Builder")]
-    static void ShowWindow() => GetWindow<MultiClawBuilder>("MultiClaw | Builder");
+    static void ShowWindow() => GetWindow<Builder>("MultiClaw | Builder");
 
     void OnEnable()
     {
         RefreshVersionsList();
-        inEditorVersion = AssetDatabase.LoadAssetAtPath<BuildVersion>(ActiveVersionPath) ?? CreateDefaultVersion();
+        inEditorVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath) ?? CreateDefaultVersion();
     }
 
     void OnGUI()
@@ -193,16 +193,16 @@ public class MultiClawBuilder : EditorWindow
         buildVersions = AssetDatabase.FindAssets("t:BuildVersion", new[] { VersionsPath })
             .Select(AssetDatabase.GUIDToAssetPath)
             .Where(path => path != ActiveVersionPath)
-            .Select(path => AssetDatabase.LoadAssetAtPath<BuildVersion>(path))
+            .Select(path => AssetDatabase.LoadAssetAtPath<GameVersion>(path))
             .Where(asset => asset != null)
             .Select(asset => new BuildConfig { configAsset = asset })
             .ToList();
     }
 
-    BuildVersion CreateDefaultVersion()
+    GameVersion CreateDefaultVersion()
     {
         if (!Directory.Exists(VersionsPath)) Directory.CreateDirectory(VersionsPath);
-        var version = CreateInstance<BuildVersion>();
+        var version = CreateInstance<GameVersion>();
         version.name = "ActiveVersion";
         AssetDatabase.CreateAsset(version, ActiveVersionPath);
         AssetDatabase.SaveAssets();

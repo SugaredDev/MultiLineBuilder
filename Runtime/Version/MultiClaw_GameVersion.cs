@@ -4,7 +4,7 @@ namespace MultiClaw
 {
 
 [CreateAssetMenu(fileName = "Build Version #", menuName = "Builds/Build Version")]
-public class BuildVersion : ScriptableObject
+public class GameVersion : ScriptableObject
 {
 
     public string title = "Project";

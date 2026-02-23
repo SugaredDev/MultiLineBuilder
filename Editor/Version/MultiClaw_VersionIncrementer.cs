@@ -5,22 +5,21 @@ namespace MultiClaw
 {
 
 [InitializeOnLoad]
-public class ProjectVersionIncrementer
+public class VersionIncrementer
 {
-    static ProjectVersionIncrementer()
+    
+    static VersionIncrementer()
     {
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
     }
 
-    private static void OnPlayModeStateChanged(PlayModeStateChange state)
+    static void OnPlayModeStateChanged(PlayModeStateChange state)
     {
         if (state == PlayModeStateChange.ExitingEditMode)
-        {
             IncrementRevision();
-        }
     }
 
-    private static void IncrementRevision()
+    static void IncrementRevision()
     {
         string version = PlayerSettings.bundleVersion;
         string[] parts = version.Split('.');
@@ -32,9 +31,7 @@ public class ProjectVersionIncrementer
         }
 
         if (!int.TryParse(parts[3], out int revision))
-        {
             revision = 0;
-        }
 
         revision++;
 

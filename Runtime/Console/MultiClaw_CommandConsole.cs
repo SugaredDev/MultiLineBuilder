@@ -50,7 +50,7 @@ public class CommandConsole : MonoBehaviour
 
     void Start()
     {
-        if (VersionSystem.version == null || VersionSystem.version.type != BuildVersion.ProjectType.Playtest)
+        if (VersionReader.version == null || VersionReader.version.type != GameVersion.ProjectType.Playtest)
             Destroy(gameObject);
     }
 
@@ -66,7 +66,7 @@ public class CommandConsole : MonoBehaviour
 
     void Update()
     {
-        if (VersionSystem.version == null || VersionSystem.version.type != BuildVersion.ProjectType.Playtest)
+        if (VersionReader.version == null || VersionReader.version.type != GameVersion.ProjectType.Playtest)
             return;
 
         if (Keyboard.current != null && Keyboard.current.backquoteKey.wasPressedThisFrame)
@@ -117,9 +117,7 @@ public class CommandConsole : MonoBehaviour
     void SetConsole()
     {
         if (console == null)
-        {
             console = this;
-        }
         else
             Destroy(gameObject);
     }
@@ -289,15 +287,10 @@ public class CommandConsole : MonoBehaviour
 
     bool NextHistory(int move)
     {
-        if (commandHistory.Count == 0)
-        {
-            return false;
-        }
+        if (commandHistory.Count == 0) return false;
 
-        if (historyIndex == -1 && move > 0)
-        {
-            return false;
-        }
+        if (historyIndex == -1 && move > 0) return false;
+
         if (historyIndex == -1 && move < 0)
         {
             historyIndex = commandHistory.Count - 1;
@@ -305,10 +298,7 @@ public class CommandConsole : MonoBehaviour
             return true;
         }
 
-        if (historyIndex == 0 && move < 0)
-        {
-            return false;
-        }
+        if (historyIndex == 0 && move < 0) return false;
 
         if (historyIndex == commandHistory.Count -1 && move > 0)
         {
@@ -324,13 +314,9 @@ public class CommandConsole : MonoBehaviour
 
     bool AutoComplete()
     {
-        if (input.EndsWith(" "))
-        {
-            return false;
-        }
+        if (input.EndsWith(" ")) return false;
 
         var parts = input.Split(" ");
-
         var lastWord = parts[parts.Length - 1];
 
         List<string> candidates = new();
@@ -338,40 +324,29 @@ public class CommandConsole : MonoBehaviour
         foreach (string command in commands.Keys)
         {
             if (command.StartsWith(lastWord))
-            {
                 candidates.Add(command);
-            }
         }
         foreach (string word in words)
         {
             if (word.StartsWith(lastWord))
-            {
                 candidates.Add(word);
-            }
         }
 
         candidates.Sort();
 
-        if (candidates.Count == 0)
-        {
-            return false;
-        }
+        if (candidates.Count == 0) return false;
 
         var prefix = LongestCommonPrefix(candidates);
         var previousWords = "";
         if (parts.Length > 1)
-        {
             previousWords = string.Join(" ", parts.Take(parts.Length - 1)) + " ";
-        } 
         input = previousWords + prefix;
 
         if (candidates.Count > 1)
         {
             var sb = new StringBuilder();
             foreach (string candidate in candidates)
-            {
                 sb.Append(candidate + "   ");
-            }
             Log(sb.ToString());
         }
 
@@ -383,10 +358,8 @@ public class CommandConsole : MonoBehaviour
         var prefix = "";
         var shortestInputLength = int.MaxValue;
         foreach (string input in inputs)
-        {
             if (input.Length < shortestInputLength)
                 shortestInputLength = input.Length;
-        }
 
         for (int i = 0; i < shortestInputLength; i++)
         {
@@ -395,13 +368,9 @@ public class CommandConsole : MonoBehaviour
             {
                 char nextChar = input.Split(prefix, 2)[^1][0];
                 if (candidate == null)
-                {
                     candidate = nextChar;
-                }
                 else if (candidate != nextChar)
-                {
                     return prefix;
-                }
             }
             prefix = prefix + candidate;
         }

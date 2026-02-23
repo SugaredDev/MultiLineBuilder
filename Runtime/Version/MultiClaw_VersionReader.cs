@@ -3,17 +3,14 @@ using UnityEngine;
 namespace MultiClaw
 {
 
-public class VersionSystem : MonoBehaviour
+public class VersionReader : MonoBehaviour
 {
 
-    public static BuildVersion version { get; private set; }
+    public static GameVersion version { get; private set; }
     static bool showGUI = true;
 
-    public static void ShowVersion()
-    {
-        showGUI = !showGUI;
-    }
-
+    public static void ShowVersion() => showGUI = !showGUI;
+    
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Initialize()
     {
@@ -26,9 +23,9 @@ public class VersionSystem : MonoBehaviour
         
         var versionObject = new GameObject("VersionSystem");
         versionObject.transform.SetParent(cloud.transform);
-        versionObject.AddComponent<VersionSystem>();
+        versionObject.AddComponent<VersionReader>();
 
-        version = Resources.Load<BuildVersion>("ActiveVersion");
+        version = Resources.Load<GameVersion>("ActiveVersion");
 
         if (version == null)
             Debug.LogError("Game Version => ActiveVersion.asset not found in Resources folder. (Assets/Plugins/MultiClaw/Resources)");
@@ -54,7 +51,7 @@ public class VersionSystem : MonoBehaviour
 
     void OnGUI()
     {
-        if (!showGUI || version == null || version.type != BuildVersion.ProjectType.Playtest)
+        if (!showGUI || version == null || version.type != GameVersion.ProjectType.Playtest)
             return;
 
         versionStyle.fontSize = Mathf.Max(5, Screen.height / 50);
