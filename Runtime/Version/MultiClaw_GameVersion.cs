@@ -9,8 +9,7 @@ public class GameVersion : ScriptableObject
 
     public string title = "Project";
     public string fileName = "Application";
-    public enum ProjectType { Release, Demo, Playtest, Showcase }
-    public ProjectType type;
+    public bool debug = true;
     public uint steamAPI;
     [HideInInspector] public bool steamDeck = false;
     [HideInInspector] public bool buildEnabled = true;

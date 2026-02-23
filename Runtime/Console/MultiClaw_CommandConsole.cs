@@ -50,7 +50,7 @@ public class CommandConsole : MonoBehaviour
 
     void Start()
     {
-        if (VersionReader.version == null || VersionReader.version.type != GameVersion.ProjectType.Playtest)
+        if (VersionReader.version == null || !VersionReader.version.debug)
             Destroy(gameObject);
     }
 
@@ -66,7 +66,7 @@ public class CommandConsole : MonoBehaviour
 
     void Update()
     {
-        if (VersionReader.version == null || VersionReader.version.type != GameVersion.ProjectType.Playtest)
+        if (VersionReader.version == null || !VersionReader.version.debug)
             return;
 
         if (Keyboard.current != null && Keyboard.current.backquoteKey.wasPressedThisFrame)

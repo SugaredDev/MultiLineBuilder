@@ -49,8 +49,10 @@ public class Builder : EditorWindow
 
     void OnEnable()
     {
+        EnsureActiveVersionExists();
         RefreshVersionsList();
         inEditorVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath) ?? CreateDefaultVersion();
+        EnsureActiveVersionMatchesAvailable();
     }
 
     void OnGUI()
@@ -59,6 +61,14 @@ public class Builder : EditorWindow
         if (GUILayout.Button("Versions Folder"))
             EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<Object>(VersionsPath));
         if (GUILayout.Button("Refresh")) RefreshVersionsList();
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Build Versions", EditorStyles.boldLabel);
+        GUI.backgroundColor = Color.green;
+        if (GUILayout.Button("+ New Version", GUILayout.Width(100)))
+            CreateNewVersion();
+        GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
         scroll = EditorGUILayout.BeginScrollView(scroll);
@@ -70,9 +80,9 @@ public class Builder : EditorWindow
 
         EditorGUILayout.LabelField("Platforms", EditorStyles.boldLabel);
         buildWindows = ColoredToggle("Windows", buildWindows);
-        buildMac = ColoredToggle("macOS", buildMac);
         buildLinux = ColoredToggle("Linux", buildLinux);
         buildSteamDeck = ColoredToggle("Steam Deck", buildSteamDeck);
+        buildMac = ColoredToggle("macOS", buildMac);
 
         GUILayout.Space(10);
         bool[] platformStates = { buildWindows, buildMac, buildLinux, buildSteamDeck };
@@ -101,8 +111,10 @@ public class Builder : EditorWindow
         EditorGUILayout.BeginHorizontal();
 
         bool isActive = inEditorVersion != null && JsonUtility.ToJson(version.configAsset) == JsonUtility.ToJson(inEditorVersion);
+        bool isActiveAsset = AssetDatabase.GetAssetPath(version.configAsset) == ActiveVersionPath;
+        
         GUI.backgroundColor = isActive ? Color.yellow : Color.white;
-        GUI.enabled = !isActive && version.configAsset != null;
+        GUI.enabled = !isActiveAsset && version.configAsset != null;
 
         if (GUILayout.Button(isActive ? "Active In-Editor" : "Set Active", GUILayout.Width(110)))
         {
@@ -118,14 +130,55 @@ public class Builder : EditorWindow
             version.buildEnabled = !version.buildEnabled;
 
         GUI.backgroundColor = Color.white;
+        GUILayout.FlexibleSpace();
+        
+        GUI.enabled = !isActiveAsset;
+        GUI.backgroundColor = Color.red;
+        if (GUILayout.Button("Delete", GUILayout.Width(60)))
+        {
+            if (EditorUtility.DisplayDialog("Delete Version", $"Are you sure you want to delete '{version.configAsset.title}'?", "Delete", "Cancel"))
+            {
+                var versionToDelete = version.configAsset;
+                EditorApplication.delayCall += () => DeleteVersion(versionToDelete);
+            }
+        }
+
+        GUI.enabled = true;
+        GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
         if (version.configAsset != null)
         {
-            EditorGUILayout.LabelField("Title:", version.configAsset.title);
-            EditorGUILayout.LabelField("File:", version.configAsset.fileName);
-            EditorGUILayout.LabelField("Type:", version.configAsset.type.ToString());
-            EditorGUILayout.LabelField("Steam API:", version.configAsset.steamAPI.ToString());
+            GUI.enabled = !isActiveAsset;
+            EditorGUI.BeginChangeCheck();
+            
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Title:", GUILayout.Width(140));
+            version.configAsset.title = EditorGUILayout.TextField(version.configAsset.title);
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Executable File Name:", GUILayout.Width(140));
+            version.configAsset.fileName = EditorGUILayout.TextField(version.configAsset.fileName);
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Debug:", GUILayout.Width(140));
+            version.configAsset.debug = EditorGUILayout.Toggle(version.configAsset.debug);
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Steam API:", GUILayout.Width(140));
+            version.configAsset.steamAPI = (uint)EditorGUILayout.IntField((int)version.configAsset.steamAPI);
+            EditorGUILayout.EndHorizontal();
+            
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(version.configAsset);
+                AssetDatabase.SaveAssets();
+            }
+            
+            GUI.enabled = true;
         }
         EditorGUILayout.EndVertical();
     }
@@ -190,13 +243,21 @@ public class Builder : EditorWindow
         
         if (!Directory.Exists(VersionsPath)) Directory.CreateDirectory(VersionsPath);
 
-        buildVersions = AssetDatabase.FindAssets("t:BuildVersion", new[] { VersionsPath })
+        var allVersions = AssetDatabase.FindAssets("t:GameVersion", new[] { VersionsPath })
             .Select(AssetDatabase.GUIDToAssetPath)
-            .Where(path => path != ActiveVersionPath)
             .Select(path => AssetDatabase.LoadAssetAtPath<GameVersion>(path))
             .Where(asset => asset != null)
             .Select(asset => new BuildConfig { configAsset = asset })
             .ToList();
+        
+        var otherVersions = allVersions.Where(v => AssetDatabase.GetAssetPath(v.configAsset) != ActiveVersionPath).ToList();
+        
+        if (otherVersions.Count > 0)
+            buildVersions = otherVersions;
+        else
+            buildVersions = allVersions;
+        
+        EnsureActiveVersionMatchesAvailable();
     }
 
     GameVersion CreateDefaultVersion()
@@ -204,9 +265,132 @@ public class Builder : EditorWindow
         if (!Directory.Exists(VersionsPath)) Directory.CreateDirectory(VersionsPath);
         var version = CreateInstance<GameVersion>();
         version.name = "ActiveVersion";
+        version.title = "Debug";
+        version.fileName = "Debug";
         AssetDatabase.CreateAsset(version, ActiveVersionPath);
         AssetDatabase.SaveAssets();
         return version;
+    }
+
+    void ShowActiveVersion()
+    {
+        EditorGUILayout.LabelField("Active Version", EditorStyles.boldLabel);
+        EditorGUILayout.BeginVertical("box");
+        
+        GUI.enabled = false;
+        
+        if (inEditorVersion != null)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Title:", GUILayout.Width(140));
+            EditorGUILayout.TextField(inEditorVersion.title);
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Executable File Name:", GUILayout.Width(140));
+            EditorGUILayout.TextField(inEditorVersion.fileName);
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Debug:", GUILayout.Width(140));
+            EditorGUILayout.Toggle(inEditorVersion.debug);
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Steam API:", GUILayout.Width(140));
+            EditorGUILayout.IntField((int)inEditorVersion.steamAPI);
+            EditorGUILayout.EndHorizontal();
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("No active version found.", MessageType.Warning);
+        }
+        
+        GUI.enabled = true;
+        EditorGUILayout.EndVertical();
+    }
+
+    void CreateNewVersion()
+    {
+        if (!Directory.Exists(VersionsPath)) Directory.CreateDirectory(VersionsPath);
+        
+        int versionNumber = 1;
+        string assetPath;
+        
+        do
+        {
+            assetPath = Path.Combine(VersionsPath, $"Build Version {versionNumber}.asset");
+            versionNumber++;
+        } while (AssetDatabase.LoadAssetAtPath<GameVersion>(assetPath) != null);
+        
+        var newVersion = CreateInstance<GameVersion>();
+        
+        AssetDatabase.CreateAsset(newVersion, assetPath);
+        AssetDatabase.SaveAssets();
+        
+        EditorApplication.delayCall += () =>
+        {
+            RefreshVersionsList();
+            EditorGUIUtility.PingObject(newVersion);
+        };
+    }
+
+    void DeleteVersion(GameVersion versionToDelete)
+    {
+        if (versionToDelete == null) return;
+        
+        string assetPath = AssetDatabase.GetAssetPath(versionToDelete);
+        AssetDatabase.DeleteAsset(assetPath);
+        AssetDatabase.SaveAssets();
+        
+        RefreshVersionsList();
+    }
+
+    void EnsureActiveVersionExists()
+    {
+        var activeVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath);
+        
+        if (activeVersion == null)
+        {
+            Debug.LogWarning("ActiveVersion.asset not found in Resources folder. => Creating a new one.");
+            
+            if (!Directory.Exists(VersionsPath))
+                Directory.CreateDirectory(VersionsPath);
+            
+            var newVersion = CreateInstance<GameVersion>();
+            newVersion.name = "Active Version";
+            newVersion.title = "Dev";
+            newVersion.fileName = "Development";
+            
+            AssetDatabase.CreateAsset(newVersion, ActiveVersionPath);
+            AssetDatabase.SaveAssets();
+        }
+    }
+
+    void EnsureActiveVersionMatchesAvailable()
+    {
+        if (inEditorVersion == null)
+            inEditorVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath) ?? CreateDefaultVersion();
+        
+        if (buildVersions.Count == 0) return;
+        
+        bool foundMatch = false;
+        foreach (var version in buildVersions)
+        {
+            if (version.configAsset != null && JsonUtility.ToJson(version.configAsset) == JsonUtility.ToJson(inEditorVersion))
+            {
+                foundMatch = true;
+                break;
+            }
+        }
+        
+        if (!foundMatch && buildVersions.Count > 0 && buildVersions[0].configAsset != null && inEditorVersion != null)
+        {
+            EditorUtility.CopySerialized(buildVersions[0].configAsset, inEditorVersion);
+            EditorUtility.SetDirty(inEditorVersion);
+            inEditorVersion.name = "ActiveVersion";
+            AssetDatabase.SaveAssets();
+        }
     }
     
 }

@@ -51,7 +51,7 @@ public class VersionReader : MonoBehaviour
 
     void OnGUI()
     {
-        if (!showGUI || version == null || version.type != GameVersion.ProjectType.Playtest)
+        if (!showGUI || version == null || !version.debug)
             return;
 
         versionStyle.fontSize = Mathf.Max(5, Screen.height / 50);

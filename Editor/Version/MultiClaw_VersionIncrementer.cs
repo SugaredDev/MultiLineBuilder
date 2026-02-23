@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using System.IO;
 
 namespace MultiClaw
 {
@@ -7,6 +8,9 @@ namespace MultiClaw
 [InitializeOnLoad]
 public class VersionIncrementer
 {
+    
+    const string VersionsPath = "Assets/Plugins/MultiClaw/Resources";
+    const string ActiveVersionPath = "Assets/Plugins/MultiClaw/Resources/ActiveVersion.asset";
     
     static VersionIncrementer()
     {
@@ -16,7 +20,33 @@ public class VersionIncrementer
     static void OnPlayModeStateChanged(PlayModeStateChange state)
     {
         if (state == PlayModeStateChange.ExitingEditMode)
+        {
+            EnsureActiveVersionExists();
             IncrementRevision();
+        }
+    }
+
+    static void EnsureActiveVersionExists()
+    {
+        var activeVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath);
+        
+        if (activeVersion == null)
+        {
+            Debug.LogWarning("ActiveVersion.asset not found in Resources folder. Creating a new one.");
+            
+            if (!Directory.Exists(VersionsPath))
+                Directory.CreateDirectory(VersionsPath);
+            
+            var newVersion = ScriptableObject.CreateInstance<GameVersion>();
+            newVersion.name = "Active Version";
+            newVersion.title = "Dev";
+            newVersion.fileName = "Development";
+            
+            AssetDatabase.CreateAsset(newVersion, ActiveVersionPath);
+            AssetDatabase.SaveAssets();
+            
+            Debug.Log("ActiveVersion.asset created successfully.");
+        }
     }
 
     static void IncrementRevision()
