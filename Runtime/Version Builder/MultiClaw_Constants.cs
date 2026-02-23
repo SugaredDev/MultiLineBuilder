@@ -9,29 +9,31 @@ namespace MultiClaw
 
 public static class Constants
 {
-    public const string VersionsPath = "Assets/Plugins/MultiClaw/Resources/Game Versions";
-    public const string ActiveVersionPath = "Assets/Plugins/MultiClaw/Resources/Game Versions/Active Version.asset";
-    public const string ActiveVersionResourceName = "Game Versions/Active Version";
-    public const string GUIFontResourceName = "GUI";
+    
+    public const string Path_Versions = "Assets/Plugins/MultiClaw/Resources/Game Versions";
+    public const string Resources_Active = "Game Versions/Active Version";
+    public const string Path_Active = "Assets/Plugins/MultiClaw/Resources/Game Versions/Active Version.asset";
+    public const string Resources_Indicator = "Version Indication Font/Indicator";
+    public const string Path_Indicator = "Assets/Plugins/MultiClaw/Resources/Version Indication Font";
 
 #if UNITY_EDITOR
     public static GameVersion EnsureActiveVersionExists()
     {
-        var activeVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(ActiveVersionPath);
+        var activeVersion = AssetDatabase.LoadAssetAtPath<GameVersion>(Path_Active);
         
         if (activeVersion == null)
         {
             Debug.LogWarning("ActiveVersion.asset not found in Resources folder. Creating a new one.");
             
-            if (!Directory.Exists(VersionsPath))
-                Directory.CreateDirectory(VersionsPath);
+            if (!Directory.Exists(Path_Versions))
+                Directory.CreateDirectory(Path_Versions);
             
             activeVersion = ScriptableObject.CreateInstance<GameVersion>();
             activeVersion.name = "Active Version";
             activeVersion.title = "Dev";
             activeVersion.fileName = "Development";
             
-            AssetDatabase.CreateAsset(activeVersion, ActiveVersionPath);
+            AssetDatabase.CreateAsset(activeVersion, Path_Active);
             AssetDatabase.SaveAssets();
             
             Debug.Log("ActiveVersion.asset created successfully.");
@@ -45,6 +47,7 @@ public static class Constants
     {
         return version != null && version.debug;
     }
+
 }
 
 }

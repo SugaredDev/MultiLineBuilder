@@ -8,7 +8,7 @@ using System.Linq;
 namespace MultiClaw
 {
 
-public class Builder : EditorWindow
+public class VersionBuilder : EditorWindow
 {
 
     [System.Serializable]
@@ -41,8 +41,8 @@ public class Builder : EditorWindow
         new(true, BuildTarget.StandaloneLinux64, "Steam Deck", ".x86_64")
     };
 
-    [MenuItem("Tools/MultiClaw/Builder")]
-    static void ShowWindow() => GetWindow<Builder>("MultiClaw | Builder");
+    [MenuItem("Tools/MultiClaw/Version Builder")]
+    static void ShowWindow() => GetWindow<VersionBuilder>("MultiClaw | Version Builder");
 
     void OnEnable()
     {
@@ -101,7 +101,7 @@ public class Builder : EditorWindow
         EditorGUILayout.BeginHorizontal();
 
         bool isActive = inEditorVersion != null && JsonUtility.ToJson(version.configAsset) == JsonUtility.ToJson(inEditorVersion);
-        bool isActiveAsset = AssetDatabase.GetAssetPath(version.configAsset) == Constants.ActiveVersionPath;
+        bool isActiveAsset = AssetDatabase.GetAssetPath(version.configAsset) == Constants.Path_Active;
         
         GUI.backgroundColor = isActive ? Color.yellow : Color.white;
         GUI.enabled = !isActiveAsset && version.configAsset != null;
@@ -231,16 +231,16 @@ public class Builder : EditorWindow
         buildVersions.Clear();
         buildWindows = buildMac = buildLinux = buildSteamDeck = false;
         
-        if (!Directory.Exists(Constants.VersionsPath)) Directory.CreateDirectory(Constants.VersionsPath);
+        if (!Directory.Exists(Constants.Path_Versions)) Directory.CreateDirectory(Constants.Path_Versions);
 
-        var allVersions = AssetDatabase.FindAssets("t:GameVersion", new[] { Constants.VersionsPath })
+        var allVersions = AssetDatabase.FindAssets("t:GameVersion", new[] { Constants.Path_Versions })
             .Select(AssetDatabase.GUIDToAssetPath)
             .Select(path => AssetDatabase.LoadAssetAtPath<GameVersion>(path))
             .Where(asset => asset != null)
             .Select(asset => new BuildConfig { configAsset = asset })
             .ToList();
         
-        var otherVersions = allVersions.Where(v => AssetDatabase.GetAssetPath(v.configAsset) != Constants.ActiveVersionPath).ToList();
+        var otherVersions = allVersions.Where(v => AssetDatabase.GetAssetPath(v.configAsset) != Constants.Path_Active).ToList();
         
         if (otherVersions.Count > 0)
             buildVersions = otherVersions;
@@ -290,14 +290,14 @@ public class Builder : EditorWindow
 
     void CreateNewVersion()
     {
-        if (!Directory.Exists(Constants.VersionsPath)) Directory.CreateDirectory(Constants.VersionsPath);
+        if (!Directory.Exists(Constants.Path_Versions)) Directory.CreateDirectory(Constants.Path_Versions);
         
         int versionNumber = 1;
         string assetPath;
         
         do
         {
-            assetPath = Path.Combine(Constants.VersionsPath, $"Build Version {versionNumber}.asset");
+            assetPath = Path.Combine(Constants.Path_Versions, $"Build Version {versionNumber}.asset");
             versionNumber++;
         } while (AssetDatabase.LoadAssetAtPath<GameVersion>(assetPath) != null);
         

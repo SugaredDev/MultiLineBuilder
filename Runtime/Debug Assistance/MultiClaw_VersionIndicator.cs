@@ -3,7 +3,7 @@ using UnityEngine;
 namespace MultiClaw
 {
 
-public class VersionDebugIndicator : MonoBehaviour
+public class VersionIndicator : MonoBehaviour
 {
 
     public static GameVersion version { get; private set; }
@@ -23,9 +23,9 @@ public class VersionDebugIndicator : MonoBehaviour
         
         var versionObject = new GameObject("VersionSystem");
         versionObject.transform.SetParent(cloud.transform);
-        versionObject.AddComponent<VersionDebugIndicator>();
+        versionObject.AddComponent<VersionIndicator>();
 
-        version = Resources.Load<GameVersion>(Constants.ActiveVersionResourceName);
+        version = Resources.Load<GameVersion>(Constants.Resources_Active);
 
         if (version == null)
             Debug.LogError("Game Version => ActiveVersion.asset not found in Resources folder. (Assets/Plugins/MultiClaw/Resources)");
@@ -35,7 +35,7 @@ public class VersionDebugIndicator : MonoBehaviour
     Font customFont;
     void Awake()
     {
-        customFont = Resources.Load<Font>(Constants.GUIFontResourceName);
+        customFont = Resources.Load<Font>(Constants.Resources_Indicator);
         if (customFont == null)
             Debug.LogWarning("Version Indication => GUI Font not found in Assets/Plugins/MultiClaw/Resources/GUI. Using default GUI font.");
 

@@ -50,7 +50,7 @@ public class CommandConsole : MonoBehaviour
 
     void Start()
     {
-        if (!Constants.IsDebugVersion(VersionDebugIndicator.version))
+        if (!Constants.IsDebugVersion(VersionIndicator.version))
             Destroy(gameObject);
     }
 
@@ -66,7 +66,7 @@ public class CommandConsole : MonoBehaviour
 
     void Update()
     {
-        if (!Constants.IsDebugVersion(VersionDebugIndicator.version))
+        if (!Constants.IsDebugVersion(VersionIndicator.version))
             return;
 
         if (Keyboard.current != null && Keyboard.current.backquoteKey.wasPressedThisFrame)
