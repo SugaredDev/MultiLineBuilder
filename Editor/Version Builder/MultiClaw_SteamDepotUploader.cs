@@ -14,7 +14,6 @@ public class SteamDepotUploader : EditorWindow
     public class SteamConfig
     {
         public string steamUsername = "";
-        public string steamPassword = "";
         public string appId = "0000000";
         public string depotWindows = "0000001";
         public string depotLinux = "0000003";
@@ -24,6 +23,7 @@ public class SteamDepotUploader : EditorWindow
     }
 
     static SteamConfig config;
+    static string temporaryPassword = "";
     Vector2 scrollPos;
     bool showAdvanced = false;
 
@@ -36,6 +36,12 @@ public class SteamDepotUploader : EditorWindow
     void OnEnable()
     {
         LoadConfig();
+        temporaryPassword = "";
+    }
+
+    void OnDisable()
+    {
+        temporaryPassword = "";
     }
 
     void OnGUI()
@@ -46,7 +52,8 @@ public class SteamDepotUploader : EditorWindow
         EditorGUILayout.Space(5);
 
         config.steamUsername = EditorGUILayout.TextField("Steam Username", config.steamUsername);
-        config.steamPassword = EditorGUILayout.PasswordField("Steam Password", config.steamPassword);
+        temporaryPassword = EditorGUILayout.PasswordField("Steam Password", temporaryPassword);
+        EditorGUILayout.HelpBox("Password is never saved - you must enter it each session", MessageType.Info);
         EditorGUILayout.Space(5);
 
         config.steamBranch = EditorGUILayout.TextField("Steam Branch", config.steamBranch);
@@ -54,7 +61,7 @@ public class SteamDepotUploader : EditorWindow
         EditorGUILayout.Space(5);
 
         config.autoUploadAfterBuild = EditorGUILayout.Toggle("Auto-Upload After Build", config.autoUploadAfterBuild);
-        EditorGUILayout.HelpBox("Automatically upload to Steam after Version Builder completes builds", MessageType.Info);
+        EditorGUILayout.HelpBox("Note: Auto-upload requires manual password entry and is not fully supported", MessageType.Warning);
         EditorGUILayout.Space(10);
 
         showAdvanced = EditorGUILayout.Foldout(showAdvanced, "Advanced Settings", true);
@@ -73,7 +80,7 @@ public class SteamDepotUploader : EditorWindow
         EditorGUILayout.Space(5);
 
         bool canUpload = !string.IsNullOrEmpty(config.steamUsername) && 
-                         !string.IsNullOrEmpty(config.steamPassword) &&
+                         !string.IsNullOrEmpty(temporaryPassword) &&
                          Directory.Exists(GetBuildsPath());
 
         GUI.enabled = canUpload;
@@ -145,14 +152,7 @@ public class SteamDepotUploader : EditorWindow
             return;
         }
 
-        if (string.IsNullOrEmpty(config.steamUsername) || string.IsNullOrEmpty(config.steamPassword))
-        {
-            UnityEngine.Debug.LogWarning("Steam credentials not configured. Skipping auto-upload.");
-            return;
-        }
-
-        UnityEngine.Debug.Log("Starting automatic Steam upload...");
-        UploadToSteam();
+        UnityEngine.Debug.LogWarning("Auto-upload after build is not supported (password required). Please upload manually from Steam Depot Uploader window.");
     }
 
     static void UploadToSteam()
@@ -187,6 +187,8 @@ public class SteamDepotUploader : EditorWindow
             else
                 UnityEngine.Debug.LogError($"Failed to upload '{versionName}' to Steam");
         }
+
+        temporaryPassword = "";
 
         EditorUtility.DisplayDialog("Upload Complete", 
             $"Steam depot upload finished!\nBranch: {config.steamBranch}", "OK");
@@ -329,7 +331,7 @@ public class SteamDepotUploader : EditorWindow
 
         #if UNITY_EDITOR_WIN
         startInfo.FileName = steamCmdPath;
-        startInfo.Arguments = $"+login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit";
+        startInfo.Arguments = $"+login {config.steamUsername} {temporaryPassword} +run_app_build \"{appVdfPath}\" +quit";
         startInfo.WorkingDirectory = Path.GetDirectoryName(steamCmdPath);
         startInfo.UseShellExecute = true;
         startInfo.CreateNoWindow = false;
@@ -339,22 +341,22 @@ public class SteamDepotUploader : EditorWindow
         if (File.Exists("/usr/bin/gnome-terminal"))
         {
             startInfo.FileName = "gnome-terminal";
-            startInfo.Arguments = $"-- bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
+            startInfo.Arguments = $"-- bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {temporaryPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
         }
         else if (File.Exists("/usr/bin/konsole"))
         {
             startInfo.FileName = "konsole";
-            startInfo.Arguments = $"-e bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
+            startInfo.Arguments = $"-e bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {temporaryPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
         }
         else if (File.Exists("/usr/bin/xterm"))
         {
             startInfo.FileName = "xterm";
-            startInfo.Arguments = $"-e bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
+            startInfo.Arguments = $"-e bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {temporaryPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
         }
         else
         {
             startInfo.FileName = "x-terminal-emulator";
-            startInfo.Arguments = $"-e bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
+            startInfo.Arguments = $"-e bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {temporaryPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
         }
         
         startInfo.UseShellExecute = true;
