@@ -4,8 +4,6 @@
 Steam ContentBuilder/
 Steam ContentBuilder/scripts/
 Steam ContentBuilder/output/
-Steam ContentBuilder/*.meta
-Steam ContentBuilder/**/*.meta
 !Steam ContentBuilder/run_build.bat
 !Steam ContentBuilder/builder/
 Steam ContentBuilder/builder/*
