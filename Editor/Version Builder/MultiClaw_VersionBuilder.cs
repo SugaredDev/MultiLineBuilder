@@ -207,6 +207,8 @@ public class VersionBuilder : EditorWindow
         AssetDatabase.SaveAssets();
         EditorUtility.RevealInFinder(buildsRoot);
         EditorUtility.DisplayDialog("Complete", "All builds finished!", "OK");
+        
+        SteamDepotUploader.UploadAfterBuild();
     }
 
     void BuildPlatform(BuildConfig version, PlatformInfo platform, string root, string[] scenes)

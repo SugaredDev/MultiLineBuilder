@@ -1,0 +1,15 @@
+
+# ====================================
+
+#Steam Builder stuff.
+
+builder/
+builder_linux/
+builder_osx/
+content/*
+!content/.gitkeep
+output/*
+!output/.gitkeep
+dumps/
+scripts/
+*.meta
