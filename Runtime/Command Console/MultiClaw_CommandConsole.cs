@@ -46,12 +46,28 @@ public class CommandConsole : MonoBehaviour
     void Awake()
     {
         SetConsole();
+        
+        // Subscribe to version loaded event or check immediately if already loaded
+        VersionIndicator.OnVersionLoaded += OnVersionLoaded;
+        
+        // If version already loaded before this Awake, check immediately
+        if (VersionIndicator.version != null)
+            OnVersionLoaded(VersionIndicator.version);
     }
-
-    void Start()
+    
+    void OnVersionLoaded(GameVersion version)
     {
-        if (!Constants.IsDebugVersion(VersionIndicator.version))
+        // Unsubscribe to avoid multiple calls
+        VersionIndicator.OnVersionLoaded -= OnVersionLoaded;
+        
+        // Check if version exists and if this is a debug build
+        if (version == null || !Constants.IsDebugVersion(version))
+        {
             Destroy(gameObject);
+            return;
+        }
+        
+        SetCommands();
     }
 
     void OnEnable()
@@ -62,13 +78,11 @@ public class CommandConsole : MonoBehaviour
     void OnDisable()
     {
         Application.logMessageReceived -= HandleLog;
+        VersionIndicator.OnVersionLoaded -= OnVersionLoaded;
     }
 
     void Update()
     {
-        if (!Constants.IsDebugVersion(VersionIndicator.version))
-            return;
-
         if (Keyboard.current != null && Keyboard.current.backquoteKey.wasPressedThisFrame)
             ToggleConsole();
     }
@@ -76,9 +90,6 @@ public class CommandConsole : MonoBehaviour
     void ToggleConsole()
     {
         showConsole = !showConsole;
-        
-        if (showConsole && commands.Count == 0)
-            SetCommands();
 
         Time.timeScale = showConsole ? 0f : 1f;
         

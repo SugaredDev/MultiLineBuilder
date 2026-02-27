@@ -8,6 +8,9 @@ public class VersionIndicator : MonoBehaviour
 
     public static GameVersion version { get; private set; }
     static bool showGUI = true;
+    
+    public static event System.Action<GameVersion> OnVersionLoaded;
+    static bool versionLoaded = false;
 
     public static void ShowVersion() => showGUI = !showGUI;
     
@@ -29,6 +32,9 @@ public class VersionIndicator : MonoBehaviour
 
         if (version == null)
             Debug.LogError("Game Version => Active Version.asset not found in Resources folder. (Assets/Plugins/MultiClaw/Resources)");
+        
+        versionLoaded = true;
+        OnVersionLoaded?.Invoke(version);
     }
 
     GUIStyle versionStyle;
