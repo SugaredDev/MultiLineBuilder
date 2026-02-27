@@ -33,6 +33,7 @@ public class VersionBuilder : EditorWindow
     Vector2 scroll;
     GameVersion inEditorVersion;
     bool buildWindows, buildMac, buildLinux, buildSteamDeck;
+    bool autoUploadToSteam = false;
 
     readonly PlatformInfo[] platforms = {
         new(false, BuildTarget.StandaloneWindows64, "Windows", ".exe"),
@@ -75,8 +76,24 @@ public class VersionBuilder : EditorWindow
         buildMac = ColoredToggle("macOS", buildMac);
 
         GUILayout.Space(10);
+        autoUploadToSteam = ColoredToggle("Steam Upload", autoUploadToSteam);
+        
+        if (autoUploadToSteam)
+        {
+            if (GUILayout.Button("Open Steam Depoter"))
+                EditorWindow.GetWindow<SteamDepoter>("Steam Depoter");
+        }
+
+        GUILayout.Space(10);
         bool[] platformStates = { buildWindows, buildMac, buildLinux, buildSteamDeck };
         bool canBuild = platformStates.Any(p => p) && buildVersions.Any(v => v.buildEnabled);
+        
+        string steamError = "";
+        if (autoUploadToSteam && !ValidateSteamConfig(out steamError))
+        {
+            canBuild = false;
+            EditorGUILayout.HelpBox($"Steam upload enabled but configuration incomplete: {steamError}", MessageType.Error);
+        }
 
         GUI.enabled = canBuild;
         GUI.backgroundColor = canBuild ? Color.green : Color.red;
@@ -208,7 +225,54 @@ public class VersionBuilder : EditorWindow
         EditorUtility.RevealInFinder(buildsRoot);
         EditorUtility.DisplayDialog("Complete", "All builds finished!", "OK");
         
-        SteamDepoter.UploadAfterBuild();
+        if (autoUploadToSteam)
+            SteamDepoter.UploadAfterBuild();
+    }
+
+    bool ValidateSteamConfig(out string error)
+    {
+        error = "";
+        string json = EditorPrefs.GetString("MultiClaw_SteamConfig", "");
+        
+        if (string.IsNullOrEmpty(json))
+        {
+            error = "No Steam configuration found.";
+            return false;
+        }
+        
+        var config = JsonUtility.FromJson<SteamDepoter.SteamConfig>(json);
+        
+        if (string.IsNullOrEmpty(config.steamUsername))
+        {
+            error = "Steam username not set.";
+            return false;
+        }
+        
+        if (string.IsNullOrEmpty(config.steamPassword))
+        {
+            error = "Steam password not set.";
+            return false;
+        }
+        
+        if (string.IsNullOrEmpty(config.steamContentBuilderPath))
+        {
+            error = "ContentBuilder path not set.";
+            return false;
+        }
+        
+        if (!Directory.Exists(config.steamContentBuilderPath))
+        {
+            error = "ContentBuilder path does not exist.";
+            return false;
+        }
+        
+        if (string.IsNullOrEmpty(config.appId) || config.appId == "0000000")
+        {
+            error = "Steam App ID not configured.";
+            return false;
+        }
+        
+        return true;
     }
 
     void BuildPlatform(BuildConfig version, PlatformInfo platform, string root, string[] scenes)

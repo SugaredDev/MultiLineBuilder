@@ -227,7 +227,7 @@ public class SteamDepoter : EditorWindow
         string content = $@"""appbuild""
 {{
 	""appid"" ""{config.appId}""
-	""desc"" ""v{PlayerSettings.bundleVersion}""
+	""desc"" ""{PlayerSettings.bundleVersion}""
 	""buildoutput"" ""{outputPath.Replace("\\", "/")}""
 	""contentroot"" """"
 	""setlive"" ""{config.steamBranch}""
