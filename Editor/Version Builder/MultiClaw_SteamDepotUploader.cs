@@ -404,7 +404,26 @@ public class SteamDepotUploader : EditorWindow
 
     static string GetSteamContentBuilderPath()
     {
-        return Path.Combine(Application.dataPath, "MultiClaw", "Steam ContentBuilder");
+        string projectRoot = Directory.GetParent(Application.dataPath).FullName;
+        
+        string[] possiblePaths = new string[]
+        {
+            Path.Combine(projectRoot, "Packages", "com.multiclaw", "Steam ContentBuilder"),
+            Path.Combine(projectRoot, "Packages", "multiclaw", "Steam ContentBuilder"),
+            Path.Combine(Application.dataPath, "MultiClaw", "Steam ContentBuilder")
+        };
+        
+        foreach (string path in possiblePaths)
+        {
+            if (Directory.Exists(path))
+            {
+                UnityEngine.Debug.Log($"Found Steam ContentBuilder at: {path}");
+                return path;
+            }
+        }
+
+        UnityEngine.Debug.LogWarning($"Steam ContentBuilder not found. Checked: {string.Join(", ", possiblePaths)}");
+        return possiblePaths[0];
     }
 
     static string GetSteamScriptsPath()
