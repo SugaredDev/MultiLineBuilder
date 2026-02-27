@@ -1,25 +1,25 @@
 
 #==============================
 
-Steam ContentBuilder/
-Steam ContentBuilder/scripts/
-Steam ContentBuilder/output/
-!Steam ContentBuilder/run_build.bat
-!Steam ContentBuilder/builder/
-Steam ContentBuilder/builder/*
-!Steam ContentBuilder/builder/steamcmd.exe
-!Steam ContentBuilder/builder_linux/
-Steam ContentBuilder/builder_linux/*
-!Steam ContentBuilder/builder_linux/steamcmd.sh
-!Steam ContentBuilder/builder_linux/linux32/
-Steam ContentBuilder/builder_linux/linux32/*
-!Steam ContentBuilder/builder_linux/linux32/libstdc++.so.6
-!Steam ContentBuilder/builder_linux/linux32/steamcmd
-!Steam ContentBuilder/builder_linux/linux32/steamerrorreporter
-!Steam ContentBuilder/builder_osx/
-Steam ContentBuilder/builder_osx/*
-!Steam ContentBuilder/builder_osx/steamcmd
-!Steam ContentBuilder/builder_osx/steamcmd.sh
+# Steam ContentBuilder/
+# Steam ContentBuilder/scripts/
+# Steam ContentBuilder/output/
+# !Steam ContentBuilder/run_build.bat
+# !Steam ContentBuilder/builder/
+# Steam ContentBuilder/builder/*
+# !Steam ContentBuilder/builder/steamcmd.exe
+# !Steam ContentBuilder/builder_linux/
+# Steam ContentBuilder/builder_linux/*
+# !Steam ContentBuilder/builder_linux/steamcmd.sh
+# !Steam ContentBuilder/builder_linux/linux32/
+# Steam ContentBuilder/builder_linux/linux32/*
+# !Steam ContentBuilder/builder_linux/linux32/libstdc++.so.6
+# !Steam ContentBuilder/builder_linux/linux32/steamcmd
+# !Steam ContentBuilder/builder_linux/linux32/steamerrorreporter
+# !Steam ContentBuilder/builder_osx/
+# Steam ContentBuilder/builder_osx/*
+# !Steam ContentBuilder/builder_osx/steamcmd
+# !Steam ContentBuilder/builder_osx/steamcmd.sh
 
 
 
