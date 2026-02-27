@@ -183,7 +183,7 @@ public class SteamDepotUploader : EditorWindow
             bool success = ExecuteSteamCmd(versionName);
             
             if (success)
-                UnityEngine.Debug.Log($"Successfully uploaded '{versionName}' to Steam branch '{config.steamBranch}'");
+                UnityEngine.Debug.LogWarning($"Successfully uploaded '{versionName}' to Steam branch '{config.steamBranch}'");
             else
                 UnityEngine.Debug.LogError($"Failed to upload '{versionName}' to Steam");
         }
@@ -249,7 +249,7 @@ public class SteamDepotUploader : EditorWindow
         string content = $@"""appbuild""
 {{
 	""appid"" ""{config.appId}""
-	""desc"" ""{versionName} - v{PlayerSettings.bundleVersion}""
+	""desc"" ""v{PlayerSettings.bundleVersion}""
 	""buildoutput"" ""{outputPath.Replace("\\", "/")}""
 	""contentroot"" """"
 	""setlive"" ""{config.steamBranch}""
@@ -294,13 +294,11 @@ public class SteamDepotUploader : EditorWindow
             return false;
         }
 
-        // On Linux/macOS, ensure all steamcmd files have execute permissions
         #if !UNITY_EDITOR_WIN
         try
         {
             string builderDir = Path.GetDirectoryName(steamCmdPath);
             
-            // Recursively set execute permissions on all files in the builder directory
             Process chmodProcess = new Process();
             chmodProcess.StartInfo.FileName = "chmod";
             chmodProcess.StartInfo.Arguments = $"-R +x \"{builderDir}\"";
@@ -318,41 +316,83 @@ public class SteamDepotUploader : EditorWindow
 
         string appVdfPath = Path.Combine(GetSteamScriptsPath(), $"app_{config.appId}_{versionName}.vdf");
         
+        if (!File.Exists(appVdfPath))
+        {
+            UnityEngine.Debug.LogError($"App VDF not found: {appVdfPath}");
+            return false;
+        }
+
         ProcessStartInfo startInfo = new ProcessStartInfo();
         
+        UnityEngine.Debug.Log($"Executing SteamCmd...");
+        UnityEngine.Debug.Log($"VDF Path: {appVdfPath}");
+
         #if UNITY_EDITOR_WIN
         startInfo.FileName = steamCmdPath;
         startInfo.Arguments = $"+login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit";
         startInfo.WorkingDirectory = Path.GetDirectoryName(steamCmdPath);
+        startInfo.UseShellExecute = true;
+        startInfo.CreateNoWindow = false;
         #else
-        startInfo.FileName = "x-terminal-emulator";
-        startInfo.Arguments = $"-e \"{steamCmdPath}\" +login {config.steamUsername} {config.steamPassword} +run_app_build \\\"{appVdfPath}\\\" +quit";
         startInfo.WorkingDirectory = Path.GetDirectoryName(steamCmdPath);
         
-        if (!File.Exists("/usr/bin/x-terminal-emulator"))
+        if (File.Exists("/usr/bin/gnome-terminal"))
         {
             startInfo.FileName = "gnome-terminal";
-            startInfo.Arguments = $"-- bash -c \"\\\"{steamCmdPath}\\\" +login {config.steamUsername} {config.steamPassword} +run_app_build \\\\\\\"{appVdfPath}\\\\\\\" +quit; echo ''; echo 'Press Enter to close...'; read\"";
+            startInfo.Arguments = $"-- bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
         }
-        #endif
+        else if (File.Exists("/usr/bin/konsole"))
+        {
+            startInfo.FileName = "konsole";
+            startInfo.Arguments = $"-e bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
+        }
+        else if (File.Exists("/usr/bin/xterm"))
+        {
+            startInfo.FileName = "xterm";
+            startInfo.Arguments = $"-e bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
+        }
+        else
+        {
+            startInfo.FileName = "x-terminal-emulator";
+            startInfo.Arguments = $"-e bash -c '\"{steamCmdPath}\" +login {config.steamUsername} {config.steamPassword} +run_app_build \"{appVdfPath}\" +quit; echo; echo \"Press Enter to close...\"; read'";
+        }
         
         startInfo.UseShellExecute = true;
         startInfo.CreateNoWindow = false;
-
-        UnityEngine.Debug.Log($"Executing SteamCmd in console window...");
-        UnityEngine.Debug.Log($"Command: {startInfo.FileName} (credentials hidden)");
+        #endif
 
         try
         {
-            using (Process process = Process.Start(startInfo))
+            Process process = Process.Start(startInfo);
+            
+            #if UNITY_EDITOR_WIN
+            if (process != null)
             {
                 process.WaitForExit();
-                return process.ExitCode == 0;
+                int exitCode = process.ExitCode;
+                process.Dispose();
+                
+                if (exitCode == 0)
+                {
+                    UnityEngine.Debug.LogWarning("SteamCmd completed successfully");
+                    return true;
+                }
+                else
+                {
+                    UnityEngine.Debug.LogError($"SteamCmd exited with code: {exitCode}");
+                    return false;
+                }
             }
+            return false;
+            #else
+            UnityEngine.Debug.LogWarning("SteamCmd launched in terminal. Check terminal window for progress.");
+            return true;
+            #endif
         }
         catch (System.Exception e)
         {
             UnityEngine.Debug.LogError($"Failed to execute SteamCmd: {e.Message}");
+            UnityEngine.Debug.LogError($"Stack trace: {e.StackTrace}");
             return false;
         }
     }
